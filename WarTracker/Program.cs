@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using WarTracker;
 
-const string CONTENT_FILE = "index.html";
+const string CONTENT_FILE = "posts.txt";
 const string TITLE = "War Tracker";
 
 const char POSITIVE = '+';
@@ -9,7 +9,7 @@ const char NEGATIVE = '-';
 const char NEUTRAL = 'I';
 const char VERBOSE = 'V';
 
-string? lastContent = null;
+FeedReport? lastReport = null;
 DateTime? lastUpdate = null;
 
 Console.Title = TITLE;
@@ -30,7 +30,7 @@ Console.Clear();
 UpdateTitle();
 
 Log(NEUTRAL, $"Checking for updates every {delayAmount}");
-Log(NEUTRAL, $"Press ENTER to open latest news in default web browser");
+Log(NEUTRAL, $"Press ENTER to display latest posts");
 
 _ = StartBackgroundJob();
 
@@ -38,9 +38,13 @@ while (true)
 {
     Console.ReadKey(true);
 
-    if (!string.IsNullOrWhiteSpace(lastContent))
+    if (lastReport is not null)
     {
-        OpenContent();
+        PrintLastReport();
+    }
+    else
+    {
+        Log(NEGATIVE, "No data yet to view");
     }
 }
 
@@ -78,19 +82,18 @@ void Log(char lvl, string message)
     Console.ResetColor();
 }
 
-void OpenContent() => Process.Start(new ProcessStartInfo
+void PrintLastReport()
 {
-    CreateNoWindow = true,
-    UseShellExecute = true,
-    FileName = new FileInfo(CONTENT_FILE).FullName
-});
+    Console.WriteLine(lastReport?.Posts.FirstOrDefault()?.ToString());
+    Console.WriteLine($"To view the entire report, open: {new FileInfo(CONTENT_FILE).FullName}");
+}
 
 #endregion
 
 async Task StartBackgroundJob()
 {
     using var ds = new DataSource();
-    int divCount = default;
+    int lastPosts = default;
 
     while (true)
     {
@@ -98,26 +101,25 @@ async Task StartBackgroundJob()
         {
             Log(VERBOSE, "Downloading latest content...");
 
-            lastContent = await ds.GetAsync();
-            var newDivCount = lastContent.Split("<div").Length;
+            lastReport = await ds.GetAsync();
             lastUpdate = DateTime.Now;
 
-            Log(VERBOSE, $"Old Posts: {divCount} | New Posts: {newDivCount}");
+            Log(VERBOSE, $"Old Posts: {lastPosts} | New Posts: {lastReport.Posts.Length}");
 
-            if (divCount == default)
+            if (lastPosts == default)
             {
-                divCount = newDivCount;
-                await File.WriteAllTextAsync(CONTENT_FILE, lastContent);
+                lastPosts = lastReport.Posts.Length;
+                await File.WriteAllTextAsync(CONTENT_FILE, lastReport.ToString());
 
                 if (shouldAlert)
                     Beep();
 
                 Log(POSITIVE, $"Got initial content @ {lastUpdate}");
             }
-            else if (newDivCount != divCount)
+            else if (lastReport.Posts.Length != lastPosts)
             {
-                divCount = newDivCount;
-                await File.WriteAllTextAsync(CONTENT_FILE, lastContent);
+                lastPosts = lastReport.Posts.Length;
+                await File.WriteAllTextAsync(CONTENT_FILE, lastReport.ToString());
 
                 if (shouldAlert)
                     Beep();
@@ -134,6 +136,9 @@ async Task StartBackgroundJob()
         catch (Exception e)
         {
             Log(NEGATIVE, e.Message);
+            Log(NEUTRAL, "Retrying in 30s...");
+            await Task.Delay(TimeSpan.FromSeconds(30));
+            continue;
         }
 
         Log(VERBOSE, $"Updating in {delayAmount} @ {DateTime.Now.Add(delayAmount)}");
