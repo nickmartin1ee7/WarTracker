@@ -30,7 +30,7 @@ Console.Clear();
 UpdateTitle();
 
 Log(NEUTRAL, $"Checking for updates every {delayAmount}");
-Log(NEUTRAL, $"Press ENTER to display latest posts");
+Log(NEUTRAL, $"Press ENTER to display the last post");
 
 _ = StartBackgroundJob();
 
