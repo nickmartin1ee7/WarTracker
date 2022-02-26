@@ -6,8 +6,8 @@ const string TITLE = "War Tracker";
 
 const char POSITIVE = '+';
 const char NEGATIVE = '-';
-const char NEUTRAL = ' ';
-const char DEBUG = 'D';
+const char NEUTRAL = 'I';
+const char VERBOSE = 'V';
 
 string? lastContent = null;
 DateTime? lastUpdate = null;
@@ -22,14 +22,17 @@ do
 
 Console.Write("Do you want to play a sound when there is an update? y/N");
 var shouldAlert = char.ToUpperInvariant(Console.ReadKey(false).KeyChar) == 'Y';
+Console.WriteLine();
+Console.Write("Do you want to enable verbose output? y/N");
+var shouldVerbose = char.ToUpperInvariant(Console.ReadKey(false).KeyChar) == 'Y';
 
 Console.Clear();
 UpdateTitle();
 
-Log(' ', $"Checking for updates every {delayAmount}");
-Log(' ', $"Press ENTER to open latest news in default web browser");
+Log(NEUTRAL, $"Checking for updates every {delayAmount}");
+Log(NEUTRAL, $"Press ENTER to open latest news in default web browser");
 
-_ = StartBackgroundJob(delayAmount, shouldAlert);
+_ = StartBackgroundJob();
 
 while (true)
 {
@@ -40,6 +43,8 @@ while (true)
         OpenContent();
     }
 }
+
+#region Helpers
 
 void Beep()
 {
@@ -55,7 +60,34 @@ void UpdateTitle()
     Console.Title = $"{TITLE} - U: {updateText}";
 }
 
-async Task StartBackgroundJob(TimeSpan delay, bool alert)
+void Log(char lvl, string message)
+{
+    if (lvl is VERBOSE && !shouldVerbose)
+        return;
+
+    Console.ForegroundColor = lvl switch
+    {
+        POSITIVE => ConsoleColor.Green,
+        NEGATIVE => ConsoleColor.Red,
+        NEUTRAL => ConsoleColor.White,
+        VERBOSE => ConsoleColor.DarkGray,
+        _ => Console.ForegroundColor,
+    };
+
+    Console.WriteLine($"[{lvl}] {DateTime.Now} - {message}");
+    Console.ResetColor();
+}
+
+void OpenContent() => Process.Start(new ProcessStartInfo
+{
+    CreateNoWindow = true,
+    UseShellExecute = true,
+    FileName = new FileInfo(CONTENT_FILE).FullName
+});
+
+#endregion
+
+async Task StartBackgroundJob()
 {
     using var ds = new DataSource();
     int divCount = default;
@@ -64,22 +96,23 @@ async Task StartBackgroundJob(TimeSpan delay, bool alert)
     {
         try
         {
+            Log(VERBOSE, "Downloading latest content...");
+
             lastContent = await ds.GetAsync();
             var newDivCount = lastContent.Split("<div").Length;
             lastUpdate = DateTime.Now;
-#if DEBUG
-            Log('D', $"Old Posts: {divCount} | New Posts: {newDivCount}");
-#endif
+
+            Log(VERBOSE, $"Old Posts: {divCount} | New Posts: {newDivCount}");
 
             if (divCount == default)
             {
                 divCount = newDivCount;
                 await File.WriteAllTextAsync(CONTENT_FILE, lastContent);
-                
+
                 if (shouldAlert)
                     Beep();
 
-                Log('+', $"Got initial content @ {lastUpdate}");
+                Log(POSITIVE, $"Got initial content @ {lastUpdate}");
             }
             else if (newDivCount != divCount)
             {
@@ -89,33 +122,21 @@ async Task StartBackgroundJob(TimeSpan delay, bool alert)
                 if (shouldAlert)
                     Beep();
 
-                Log('+', $"New update @ {lastUpdate}");
+                Log(POSITIVE, $"New update @ {lastUpdate}");
+            }
+            else
+            {
+                Log(VERBOSE, $"No new content @ {lastUpdate}");
             }
 
             UpdateTitle();
         }
         catch (Exception e)
         {
-            Log('-', e.Message);
+            Log(NEGATIVE, e.Message);
         }
 
-        await Task.Delay(delay);
+        Log(VERBOSE, $"Updating in {delayAmount} @ {DateTime.Now.Add(delayAmount)}");
+        await Task.Delay(delayAmount);
     }
 }
-
-void Log(char lvl, string message)
-{
-    Console.ForegroundColor = lvl switch
-    {
-        POSITIVE => ConsoleColor.Green,
-        NEGATIVE => ConsoleColor.Red,
-        NEUTRAL => ConsoleColor.White,
-        DEBUG => ConsoleColor.DarkGray,
-        _ => Console.ForegroundColor,
-    };
-
-    Console.WriteLine($"[{lvl}] {DateTime.Now} - {message}");
-    Console.ResetColor();
-}
-
-void OpenContent() => Process.Start(new ProcessStartInfo("cmd.exe", @$"/c ""{new FileInfo(CONTENT_FILE).FullName}"""));
