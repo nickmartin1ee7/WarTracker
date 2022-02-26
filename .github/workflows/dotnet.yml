@@ -37,7 +37,7 @@ jobs:
     - name: Build
       run: dotnet build --no-restore -c Release -o build
     - name: Publish
-      run: dotnet publish -p:PublishProfile=ClickOnceProfile
+      run: dotnet publish -o publish
     - name: GitHub Publish - Archive
       run: powershell Compress-Archive -Path publish\* -DestinationPath wartracker.zip
     - name: GitHub Publish - Release
