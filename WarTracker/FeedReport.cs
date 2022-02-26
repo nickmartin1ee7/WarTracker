@@ -58,12 +58,12 @@ internal class FeedReport
 
 internal class Post
 {
-    public string Id { get; set; }
-    public string ImageUri { get; set; }
-    public string TimeAgo { get; set; }
-    public string Location { get; set; }
-    public string Title { get; set; }
-    public string Source { get; set; }
+    public string? Id { get; set; }
+    public string? ImageUri { get; set; }
+    public string? TimeAgo { get; set; }
+    public string? Location { get; set; }
+    public string? Title { get; set; }
+    public string? Source { get; set; }
 
     public override string ToString()
     {
