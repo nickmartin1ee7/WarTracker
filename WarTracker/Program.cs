@@ -36,7 +36,7 @@ while (true)
 
 async Task StartBackgroundJob(TimeSpan delay)
 {
-    var ds = new DataSource();
+    using var ds = new DataSource();
     int divCount = default;
 
     while (true)
