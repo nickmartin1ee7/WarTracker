@@ -20,14 +20,16 @@ do
     Console.Write("Enter how often to check for updates? (ex 01:00:00 is 1 hour): ");
 } while (!TimeSpan.TryParse(Console.ReadLine(), out delayAmount));
 
-Console.Clear();
+Console.Write("Do you want to play a sound when there is an update? y/N");
+var shouldAlert = char.ToUpperInvariant(Console.ReadKey(false).KeyChar) == 'Y';
 
+Console.Clear();
 UpdateTitle();
 
 Log(' ', $"Checking for updates every {delayAmount}");
 Log(' ', $"Press ENTER to open latest news in default web browser");
 
-_ = StartBackgroundJob(delayAmount);
+_ = StartBackgroundJob(delayAmount, shouldAlert);
 
 while (true)
 {
@@ -39,13 +41,21 @@ while (true)
     }
 }
 
+void Beep()
+{
+    for (int i = 0; i < 4; i++)
+    {
+        Console.Beep(800, 100);
+    }
+}
+
 void UpdateTitle()
 {
     var updateText = lastUpdate.HasValue ? lastUpdate.Value.ToString() : "Never";
     Console.Title = $"{TITLE} - U: {updateText}";
 }
 
-async Task StartBackgroundJob(TimeSpan delay)
+async Task StartBackgroundJob(TimeSpan delay, bool alert)
 {
     using var ds = new DataSource();
     int divCount = default;
@@ -65,12 +75,20 @@ async Task StartBackgroundJob(TimeSpan delay)
             {
                 divCount = newDivCount;
                 await File.WriteAllTextAsync(CONTENT_FILE, lastContent);
+                
+                if (shouldAlert)
+                    Beep();
+
                 Log('+', $"Got initial content @ {lastUpdate}");
             }
             else if (newDivCount != divCount)
             {
                 divCount = newDivCount;
                 await File.WriteAllTextAsync(CONTENT_FILE, lastContent);
+
+                if (shouldAlert)
+                    Beep();
+
                 Log('+', $"New update @ {lastUpdate}");
             }
 
