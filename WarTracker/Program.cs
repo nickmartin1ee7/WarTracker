@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using WarTracker;
+﻿using WarTracker;
 
 const string CONTENT_FILE = "posts.txt";
 const string TITLE = "War Tracker";
