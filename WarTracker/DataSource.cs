@@ -18,8 +18,8 @@
                     throw new Exception($"No content received. Error ({result.StatusCode}) {result.ReasonPhrase}");
                 }
 
-                var startIdx = html.IndexOf(START_TAG);
-                var endIdx = html.IndexOf(END_TAG);
+                var startIdx = html.IndexOf(START_TAG, StringComparison.InvariantCulture);
+                var endIdx = html.IndexOf(END_TAG, StringComparison.InvariantCulture);
 
                 return html.Substring(startIdx, endIdx - startIdx);
         }

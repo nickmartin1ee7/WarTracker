@@ -2,6 +2,7 @@
 using WarTracker;
 
 const string CONTENT_FILE = "index.html";
+const string TITLE = "War Tracker";
 
 const char POSITIVE = '+';
 const char NEGATIVE = '-';
@@ -9,8 +10,9 @@ const char NEUTRAL = ' ';
 const char DEBUG = 'D';
 
 string? lastContent = null;
+DateTime? lastUpdate = null;
 
-Console.Title = "War Tracker";
+Console.Title = TITLE;
 
 TimeSpan delayAmount;
 do
@@ -20,7 +22,10 @@ do
 
 Console.Clear();
 
+UpdateTitle();
+
 Log(' ', $"Checking for updates every {delayAmount}");
+Log(' ', $"Press ENTER to open latest news in default web browser");
 
 _ = StartBackgroundJob(delayAmount);
 
@@ -34,6 +39,12 @@ while (true)
     }
 }
 
+void UpdateTitle()
+{
+    var updateText = lastUpdate.HasValue ? lastUpdate.Value.ToString() : "Never";
+    Console.Title = $"{TITLE} - U: {updateText}";
+}
+
 async Task StartBackgroundJob(TimeSpan delay)
 {
     using var ds = new DataSource();
@@ -45,23 +56,25 @@ async Task StartBackgroundJob(TimeSpan delay)
         {
             lastContent = await ds.GetAsync();
             var newDivCount = lastContent.Split("<div").Length;
-
+            lastUpdate = DateTime.Now;
 #if DEBUG
-            Log('D', $"Old: {divCount} | New: {newDivCount}");
+            Log('D', $"Old Posts: {divCount} | New Posts: {newDivCount}");
 #endif
 
             if (divCount == default)
             {
                 divCount = newDivCount;
                 await File.WriteAllTextAsync(CONTENT_FILE, lastContent);
-                Log('+', $"Got initial content @ {DateTime.Now}");
+                Log('+', $"Got initial content @ {lastUpdate}");
             }
             else if (newDivCount != divCount)
             {
                 divCount = newDivCount;
                 await File.WriteAllTextAsync(CONTENT_FILE, lastContent);
-                Log('+', $"New update @ {DateTime.Now}");
+                Log('+', $"New update @ {lastUpdate}");
             }
+
+            UpdateTitle();
         }
         catch (Exception e)
         {
