@@ -49,7 +49,6 @@ internal class FeedReport
         foreach (var post in Posts)
         {
             sb.AppendLine(post.ToString());
-            sb.AppendLine();
         }
 
         return sb.ToString();

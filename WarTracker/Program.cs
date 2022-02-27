@@ -1,7 +1,9 @@
 ﻿using WarTracker;
 
-const string CONTENT_FILE = "posts.txt";
 const string TITLE = "War Tracker";
+var reportFile = new FileInfo(Path.Combine(Path.GetTempPath(), TITLE, "posts.txt"));
+
+await CreateSaveLocation();
 
 const char POSITIVE = '+';
 const char NEGATIVE = '-';
@@ -30,7 +32,7 @@ Console.Clear();
 UpdateTitle();
 
 Log(NEUTRAL, $"Checking for updates every {delayAmount}");
-Log(NEUTRAL, $"Press ENTER to display the last post");
+Log(NEUTRAL, "Press ENTER to display the last post");
 
 _ = StartBackgroundJob();
 
@@ -84,8 +86,8 @@ void Log(char lvl, string message)
 
 void PrintLastReport()
 {
-    Console.WriteLine(lastReport?.Posts.FirstOrDefault()?.ToString());
-    Console.WriteLine($"To view the entire report, open: {new FileInfo(CONTENT_FILE).FullName}");
+    Console.WriteLine(lastReport.Posts.FirstOrDefault()?.ToString());
+    Console.WriteLine($"To view the entire report, open: {reportFile.FullName}");
 }
 
 #endregion
@@ -110,13 +112,13 @@ async Task StartBackgroundJob()
                 Log(NEUTRAL, "Connection re-established");
             }
 
-            var latestRepost = lastReport.Posts.First().Id;
-            Log(VERBOSE, $"Old Post: {lastId} | New Post: {latestRepost}");
+            var latestReport = lastReport.Posts.First().Id;
+            Log(VERBOSE, $"Old Post: {lastId} | New Post: {latestReport}");
 
             if (lastId == default)
             {
-                lastId = latestRepost;
-                await File.WriteAllTextAsync(CONTENT_FILE, lastReport.ToString());
+                lastId = latestReport;
+                await File.WriteAllTextAsync(reportFile.FullName, lastReport.ToString());
 
                 if (shouldAlert)
                     Beep();
@@ -125,8 +127,8 @@ async Task StartBackgroundJob()
             }
             else if (lastReport.Posts.First().Id != lastId)
             {
-                lastId = latestRepost;
-                await File.WriteAllTextAsync(CONTENT_FILE, lastReport.ToString());
+                lastId = latestReport;
+                await File.WriteAllTextAsync(reportFile.FullName, lastReport.ToString());
 
                 if (shouldAlert)
                     Beep();
@@ -142,14 +144,37 @@ async Task StartBackgroundJob()
         }
         catch (Exception e)
         {
+            const int defaultRetryDelay = 30;
+
+            var retryDelay = delayAmount.TotalSeconds < defaultRetryDelay
+                ? delayAmount
+                : TimeSpan.FromSeconds(defaultRetryDelay);
+
             lastCallFaulted = true;
+
             Log(NEGATIVE, e.Message);
-            Log(NEUTRAL, "Retrying in 30s...");
-            await Task.Delay(TimeSpan.FromSeconds(30));
+            Log(NEUTRAL, $"Retrying in {retryDelay}...");
+
+            await Task.Delay(retryDelay);
             continue;
         }
 
         Log(VERBOSE, $"Updating in {delayAmount} @ {DateTime.Now.Add(delayAmount)}");
+
         await Task.Delay(delayAmount);
+    }
+}
+
+async Task CreateSaveLocation()
+{
+    if (!reportFile.Directory.Exists)
+    {
+        reportFile.Directory.Create();
+    }
+
+    if (!reportFile.Exists)
+    {
+        reportFile.Delete();
+        await reportFile.Create().DisposeAsync();
     }
 }
