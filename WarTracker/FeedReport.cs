@@ -74,6 +74,7 @@ internal class Post
         sb.AppendLine($"Post Location: {Location}");
         sb.AppendLine($"Post Title: {Title}");
         sb.AppendLine($"Post Image URL: {ImageUri}");
+        sb.AppendLine($"Post Source: {Source}");
 
         return sb.ToString();
     }
