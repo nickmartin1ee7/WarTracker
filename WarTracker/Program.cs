@@ -25,10 +25,15 @@ do
 Console.Write("Do you want to play a sound when there is an update? y/N");
 var shouldAlert = char.ToUpperInvariant(Console.ReadKey(false).KeyChar) == 'Y';
 Console.WriteLine();
+
+Console.Write("Do you want to always display the latest post on a new post? y/N");
+var shouldDisplayNewPosts = char.ToUpperInvariant(Console.ReadKey(false).KeyChar) == 'Y';
+Console.WriteLine();
+
 Console.Write("Do you want to enable verbose output? y/N");
 var shouldVerbose = char.ToUpperInvariant(Console.ReadKey(false).KeyChar) == 'Y';
-
 Console.Clear();
+
 UpdateTitle();
 
 Log(NEUTRAL, $"Checking for updates every {delayAmount}");
@@ -42,7 +47,7 @@ while (true)
 
     if (lastReport is not null)
     {
-        PrintLastReport();
+        DisplayLastPost();
     }
     else
     {
@@ -84,7 +89,7 @@ void Log(char lvl, string message)
     Console.ResetColor();
 }
 
-void PrintLastReport()
+void DisplayLastPost()
 {
     Console.WriteLine(lastReport.Posts.FirstOrDefault()?.ToString());
     Console.WriteLine($"To view the entire report, open: {reportFile.FullName}");
@@ -124,6 +129,9 @@ async Task StartBackgroundJob()
                     Beep();
 
                 Log(POSITIVE, $"Got initial content @ {lastUpdate}");
+
+                if (shouldDisplayNewPosts)
+                    DisplayLastPost();
             }
             else if (lastReport.Posts.First().Id != lastId)
             {
@@ -134,6 +142,9 @@ async Task StartBackgroundJob()
                     Beep();
 
                 Log(POSITIVE, $"New update @ {lastUpdate}");
+
+                if (shouldDisplayNewPosts)
+                    DisplayLastPost();
             }
             else
             {
