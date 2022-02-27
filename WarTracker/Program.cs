@@ -101,7 +101,7 @@ void DisplayLastPost()
 async Task StartBackgroundJob()
 {
     using var ds = new DataSource();
-    string? lastId = null;
+    int? lastPostHash = null;
 
     while (true)
     {
@@ -118,12 +118,12 @@ async Task StartBackgroundJob()
                 Log(NEUTRAL, "Connection re-established");
             }
 
-            var latestReport = lastReport.Posts.First().Id;
-            Log(VERBOSE, $"Old Post: {lastId} | New Post: {latestReport}");
+            var latestPostHash = lastReport.Posts.First().Title?.GetHashCode();
+            Log(VERBOSE, $"Old Post: {lastPostHash} | New Post: {latestPostHash}");
 
-            if (lastId == default)
+            if (lastPostHash == default)
             {
-                lastId = latestReport;
+                lastPostHash = latestPostHash;
                 await File.WriteAllTextAsync(reportFile.FullName, lastReport.ToString());
 
                 if (shouldAlert)
@@ -134,9 +134,9 @@ async Task StartBackgroundJob()
                 if (shouldDisplayNewPosts)
                     DisplayLastPost();
             }
-            else if (lastReport.Posts.First().Id != lastId)
+            else if (latestPostHash != lastPostHash)
             {
-                lastId = latestReport;
+                lastPostHash = latestPostHash;
                 await File.WriteAllTextAsync(reportFile.FullName, lastReport.ToString());
 
                 if (shouldAlert)
