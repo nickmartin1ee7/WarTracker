@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -9,10 +9,6 @@
 
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.42" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\WarTracker.ClassLibrary\WarTracker.ClassLibrary.csproj" />
   </ItemGroup>
 
 </Project>
