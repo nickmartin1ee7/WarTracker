@@ -10,6 +10,7 @@ const char VERBOSE = 'V';
 
 FeedReport? lastReport = null;
 DateTime? lastUpdate = null;
+bool lastCallFaulted = false;
 
 Console.Title = TITLE;
 
@@ -103,6 +104,12 @@ async Task StartBackgroundJob()
             lastReport = await ds.GetAsync();
             lastUpdate = DateTime.Now;
 
+            if (lastCallFaulted)
+            {
+                lastCallFaulted = false;
+                Log(NEUTRAL, "Connection re-established");
+            }
+
             Log(VERBOSE, $"Old Posts: {lastPosts} | New Posts: {lastReport.Posts.Length}");
 
             if (lastPosts == default)
@@ -134,6 +141,7 @@ async Task StartBackgroundJob()
         }
         catch (Exception e)
         {
+            lastCallFaulted = true;
             Log(NEGATIVE, e.Message);
             Log(NEUTRAL, "Retrying in 30s...");
             await Task.Delay(TimeSpan.FromSeconds(30));
