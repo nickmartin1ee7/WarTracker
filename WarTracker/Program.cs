@@ -93,7 +93,7 @@ void PrintLastReport()
 async Task StartBackgroundJob()
 {
     using var ds = new DataSource();
-    int lastPosts = default;
+    string lastId = null;
 
     while (true)
     {
@@ -110,11 +110,12 @@ async Task StartBackgroundJob()
                 Log(NEUTRAL, "Connection re-established");
             }
 
-            Log(VERBOSE, $"Old Posts: {lastPosts} | New Posts: {lastReport.Posts.Length}");
+            var latestRepost = lastReport.Posts.First().Id;
+            Log(VERBOSE, $"Old Post: {lastId} | New Post: {latestRepost}");
 
-            if (lastPosts == default)
+            if (lastId == default)
             {
-                lastPosts = lastReport.Posts.Length;
+                lastId = latestRepost;
                 await File.WriteAllTextAsync(CONTENT_FILE, lastReport.ToString());
 
                 if (shouldAlert)
@@ -122,9 +123,9 @@ async Task StartBackgroundJob()
 
                 Log(POSITIVE, $"Got initial content @ {lastUpdate}");
             }
-            else if (lastReport.Posts.Length != lastPosts)
+            else if (lastReport.Posts.First().Id != lastId)
             {
-                lastPosts = lastReport.Posts.Length;
+                lastId = latestRepost;
                 await File.WriteAllTextAsync(CONTENT_FILE, lastReport.ToString());
 
                 if (shouldAlert)
