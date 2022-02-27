@@ -1,9 +1,9 @@
 ﻿using System.Text;
 using HtmlAgilityPack;
 
-namespace WarTracker;
+namespace WarTracker.ClassLibrary;
 
-internal class FeedReport
+public class FeedReport
 {
     public FeedReport(HtmlNode feedNode)
     {
@@ -55,7 +55,7 @@ internal class FeedReport
     }
 }
 
-internal class Post
+public class Post
 {
     public string? Id { get; set; }
     public string? ImageUri { get; set; }

@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarTracker", "WarTracker\WarTracker.csproj", "{DE7DFE31-5269-4D99-B44F-220645B529AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarTracker", "WarTracker\WarTracker.csproj", "{DE7DFE31-5269-4D99-B44F-220645B529AC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarTracker.ClassLibrary", "WarTracker.ClassLibrary\WarTracker.ClassLibrary.csproj", "{D28D8150-B7F8-425A-B006-456D6FD0DBDD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{DE7DFE31-5269-4D99-B44F-220645B529AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DE7DFE31-5269-4D99-B44F-220645B529AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DE7DFE31-5269-4D99-B44F-220645B529AC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D28D8150-B7F8-425A-B006-456D6FD0DBDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D28D8150-B7F8-425A-B006-456D6FD0DBDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D28D8150-B7F8-425A-B006-456D6FD0DBDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D28D8150-B7F8-425A-B006-456D6FD0DBDD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

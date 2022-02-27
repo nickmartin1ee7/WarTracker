@@ -1,4 +1,5 @@
-﻿using WarTracker;
+﻿using System.Linq;
+using WarTracker.ClassLibrary;
 
 const string TITLE = "War Tracker";
 var reportFile = new FileInfo(Path.Combine(Path.GetTempPath(), TITLE, "posts.txt"));
