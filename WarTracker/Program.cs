@@ -93,7 +93,7 @@ void PrintLastReport()
 async Task StartBackgroundJob()
 {
     using var ds = new DataSource();
-    string lastId = null;
+    string? lastId = null;
 
     while (true)
     {
